@@ -1,5 +1,7 @@
+import Lexer
+
 index_current_token = -1
-tokens = lexer()
+tokens = Lexer.lexer()
 
 
 def lex():
@@ -30,7 +32,7 @@ def programSub(nextTokenPair):
 		return "error"
 	nextTokenType = lex()
 	if (nextTokenType != "scolon"):
-		return "error" 
+		return "error"
 
 	declarationsSub()
 	subprogramDeclarationsSub()
@@ -48,15 +50,3 @@ def identifierListSub():
 	nextTokenType = lex()
 	if (nextTokenType == ","):
 		identifierListSub()
-	
-
-
-
-
-
-
-
-
-
-
-
