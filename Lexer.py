@@ -66,14 +66,12 @@ def lexer():
 	    		if(char in sep): #characters that indicate the beginning of a new token
 	    			if(tokenValue):  			#If token is not empty, and current char should be skipped, token is complete
 	    				tokenType = getTokenType(''.join(tokenValue))
-	    				#print(''.join(tokenValue) + ":", tokenType)
 	    				tokens.append((tokenType, ''.join(tokenValue)))
 
 	    				tokenValue = []
 
 	    			if(char != " "):			#If the character found is not a space, we need to send it to the lexer
 		    			tokenType = getTokenType(char)
-		    			#print(char + ":", tokenType)
 		    			continue #Skip appending in tokenValue
 		    		else:
 		    			continue
@@ -82,7 +80,6 @@ def lexer():
 
 		    	if(line[-1] == char):			 #If the char is the last one of the line, analyze it so that it doesn't get appended with the first from the next line (no separators)
 		    		tokenType = getTokenType(''.join(tokenValue))
-	    			#print(''.join(tokenValue) + ":", tokenType)
 	    			tokens.append((tokenType, ''.join(tokenValue)))
 	    			tokenValue = []
 	    			continue
