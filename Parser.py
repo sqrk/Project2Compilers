@@ -1,6 +1,7 @@
 index_current_token = -1
 tokens = lexer()
 
+
 def lex():
 	index_current_token += 1
 	return tokens[index_current_token]
@@ -22,7 +23,7 @@ def programSub(nextTokenPair):
 	if(nextTokenType != "lpar"):
 		return "error"
 
-	identifiersListSub()
+	identifierListSub()
 
 	nextTokenType = lex()
 	if (nextTokenType != 'rpar'):
@@ -34,7 +35,28 @@ def programSub(nextTokenPair):
 	declarationsSub()
 	subprogramDeclarationsSub()
 	compoundStatementsSub()
-	
+
 	nextTokenType = lex()
 	if (nextTokenType != "dot"):
 		return "error"
+
+
+def identifierListSub():
+	nextTokenType = lex()
+	if (nextTokenType != "id"):
+		return "error"
+	nextTokenType = lex()
+	if (nextTokenType == ","):
+		identifierListSub()
+	
+
+
+
+
+
+
+
+
+
+
+
