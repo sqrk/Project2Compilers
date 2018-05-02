@@ -127,20 +127,34 @@ def standardTypeSub():
         return 'error'
 
 
+
 #6. subprogram_declarations ⟶ {subprogram_declaration ';'}
-def subprogramDeclarationsSub():
+def subprogramDeclarationsSub(root):
 	nextTokenType = lex()
+
+	
+	
 	if (nextTokenType != 'function' and nextTokenType != 'procedure'):
 		index_current_token -= 1
 		return
 
-	subprogramDeclarationSub()
+	subprogramDeclarationsChild = createNode("subprogramDeclarationsChild", None, False)
+	addNode(root, subprogramDeclarationsChild)
+
+	subprogramDeclarationSub(subprogramDeclarationsChild)
 
 	nextTokenType = lex()
 	if (nextTokenType != 'scolon'):
 		return "error"
+	scolonChild = createNode("scolon", ";", true)
+	addNode(root, scolonChild)
 
-	subprogramDeclarationsSub()
+	subprogramDeclarationChild = createNode("subprogramDeclarationChild", None, False)
+	addNode(root, subprogramDeclarationChild)
+
+	subprogramDeclarationsSub(subprogramDeclarationChild)
+
+
 
 
 
@@ -303,6 +317,9 @@ def variable ():
 	nextTokenType = lex()
 	if (nextTokenType != 'id'):
 		return "error"
+	idChild = createNode("id", "id", True)
+	addNode(root, idChild)
+
 
 
 #15. procedure_statement ⟶ 'id' ['(' expression_list ')']
@@ -348,19 +365,24 @@ def expressionSub():
     	index_current_token -= 1
     	return
 
+
 #18. simple_expr ⟶ (term | sign term) {'addop' term}
-def simpleExprSub ():
+def simpleExprSub (root):
 	nextTokenType = lex()
 	if(nextTokenType == 'sign'):
-		termSub()
+		signChild = createNode("sign", "sign", True)
+		addNode(root, signChild)
+		termSub(root)
 	else:
 		index_current_token -= 1
-		termSub()
+		termSub(root)
 
 	while(True):
 		nextTokenType = lex()
 		if(nextTokenType == 'addop'):
-			termSub()
+			addopChild = createNode("addop", "addop", True)
+			addNode(root, addopChild)
+			termSub(root)
 		else:
 			index_current_token -= 1
 			break
