@@ -35,7 +35,7 @@ Refer to the documentation first, the conventions used here are mentionned there
 			| 'while' expression 'do' statement
 
 
-14.variable ⟶ 'id' ['[' expression ']']
+14.variable ⟶ 'id'
 
 15.procedure_statement ⟶ 'id' ['(' expression_list ')']
 
