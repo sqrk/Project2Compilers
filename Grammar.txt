@@ -15,7 +15,7 @@ Refer to the documentation first, the conventions used here are mentionned there
 
 5. standard_type ⟶ 'integer'
 
-6. subprogram_declarations ⟶ {subprogram_declaration {subprogram_declaration} ';'}   //Left Recursion
+6. subprogram_declarations ⟶ {subprogram_declaration ';'}   //Left Recursion
 
 7. subprogram_declaration ⟶ subprogram_head declarations compound_statement
 
