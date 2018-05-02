@@ -1,4 +1,5 @@
 import Lexer
+import BuildTree
 
 index_current_token = -1
 tokens = Lexer.lexer()
@@ -10,40 +11,74 @@ def lex():
 
 def parser():
 	nextToken = lex()
-	programSub(nextTokenPair)
+	root = createNode("programRoot", None, False)
+	programSub(nextTokenPair, root)
 
 #1. program ⟶ 'program' 'id' '(' identifier_list ')' ';' declarations	subprogram_declarations compound_statement 	'.'
 
-def programSub(nextTokenPair):
+def programSub(nextTokenPair, root):
 	nextTokenType = nextTokenPair[0]
 
 	if(nextTokenType != "program"):
 		return "error"
+
+	programChild = createNode("program", "program", True)
+	addNode(root, programChild)
+
 	nextTokenType = lex()
 	if(nextTokenType != "id"):
 		return "error"
+
+	idChild = createNode("id", "id", True)
+	addNode(root, idChild)
 
 	nextTokenType = lex()
 	if(nextTokenType != "lpar"):
 		return "error"
 
-	identifierListSub()
+	lparChild = createNode("lpar", "(", True)
+	addNode(root, lparChild)
+
+	identifierListChild = createNode("identifierListRoot", None, False)
+	addNode(root, identifierListChild)
+
+	identifierListSub(identifierListChild)
 
 	nextTokenType = lex()
 	if (nextTokenType != 'rpar'):
 		return "error"
+
+	rparChild = createNode("rpar", ")", True)
+	addNode(root, rparChild)
+
 	nextTokenType = lex()
 	if (nextTokenType != "scolon"):
 		return "error"
 
-	declarationsSub()
-	subprogramDeclarationsSub()
-	compoundStatementsSub()
+	scolonChild = createNode("scolon", ";", True)
+	addNode(root, scolonChild)
+
+	declarationsChild = createNode("declarationsRoot", None, False)
+	addNode(root, declarationsChild)
+
+	declarationsSub(root, declarationsChild)
+
+	subprogramDeclarationsChild = createNode("subprogramDeclarationsChild", None, False)
+	addNode(root, subprogramDeclarationsChild)
+
+	subprogramDeclarationsSub(root, subprogramDeclarationsChild)
+
+	compoundStatementsChild = createNode("compoundStatementsChild", None, False)
+	addNode(root, compoundStatementsChild)
+
+	compoundStatementsSub(compoundStatementsChild)
 
 	nextTokenType = lex()
 	if (nextTokenType != "dot"):
 		return "error"
-
+		
+	dotChild = createNode("dot", ".", True)
+	addNode(root, dotChild)
 
 #2. identifier_list ⟶ 'id' [',' identifier_list]
 def identifierListSub():
@@ -365,4 +400,3 @@ def factorSub():
 
 	elif(nextTokenType != 'num'):			#Case of 'num'
 		return 'error'
-
