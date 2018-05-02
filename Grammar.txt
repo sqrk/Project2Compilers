@@ -1,58 +1,58 @@
+Refer to the documentation first, the conventions used here are mentionned there.
+
 //What is between '' refers to terminals
 
-1. program ⟶ 'program' 'id' ( identifier_list ) ; 
+1. program ⟶ 'program' 'id' '(' identifier_list ')' ';' 
 			declarations
 			subprogram_declarations 
 			compound_statement
 			'.'
 2. identifier_list ⟶ 'id' [',' identifier_list] //Changed to avoid left recursion and pass the pairwise disjointness test
 
-3. declarations ⟶  {'var' identifier_list ':' type ';'} | 𝛜
+3. declarations ⟶  {'var' identifier_list ':' type ';'}
 
 4. type ⟶ standard_type
 
-5. standard_type ⟶ integer
+5. standard_type ⟶ 'integer'
 
-6. subprogram_declarations ⟶ subprogram_declaration subprogram_declarations; 
-								| 𝛜  				//Left Recursion
+6. subprogram_declarations ⟶ {subprogram_declaration ';'}   //Left Recursion
 
 7. subprogram_declaration ⟶ subprogram_head declarations compound_statement
 
-8. subprogram_head ⟶ 'function' 'id' arguments ':' standard_type ';' 
-					| 'procedure' 'id' arguments ;
+8. subprogram_head ⟶ 'function' 'id' arguments ':' standard_type ';' | 'procedure' 'id' arguments ';'
 
-9. arguments ⟶ ( parameter_list )
-				| 𝛜
+9. arguments ⟶ ['(' parameter_list ')']
 
-10.parameter_list ⟶ {identifier_list : type} ; //avoid left recursion
+10.parameter_list ⟶ identifier_list ':' type {';' identifier_list ':' type}  //avoid left recursion
 
-11.compound_statement ⟶ begin [statement_list] end //modified too
+11.compound_statement ⟶ 'begin' [statement_list] 'end' 
 
-12.statement_list ⟶ [statement ;] statement
+12.statement_list ⟶ statement {';' statement}
 						
-13.statement ⟶ variable 'assignop' expression
-			| procedure_statement
+13.statement ⟶ 'id' [('assignop' expression) | '('expression_list')']
 			| compound_statement
 			| 'if' expression 'then' statement 'else' statement 
 			| 'while' expression 'do' statement
 
 
-14.variable ⟶ id ['[' expression ']']
+14.variable ⟶ 'id'
 
-15.procedure_statement ⟶ id ['(' expression_list ')']
+15.procedure_statement ⟶ 'id' ['(' expression_list ')']
 
-16.expression_list ⟶ expression [, expression_list] 
+16.expression_list ⟶ expression {',' expression} 
 
-17.expression ⟶ simple_expr [relop simple_expr]
+17.expression ⟶ simple_expr ['relop' simple_expr]
 
-18.simple_expr ⟶ term | sign term | simple_expr 'addop' term
+18.simple_expr ⟶ (term | sign term) {'addop' term}
 
 19.term ⟶ factor ['mulop' term]
 
-20.factor ⟶ id [( expression_list ) ]
-	| num
-	| ( expression )
-	| not factor
+20.factor ⟶ 'id' ['(' expression_list ')' ]
+	| 'num'
+	| '(' expression ')'
+	| 'not' factor
 
 21.sign ⟶ '+'|'-'
+
+
 
