@@ -4,7 +4,7 @@ mulop = ['*', '/', 'div', 'mod', 'and']
 relop = ['=', '<>', '<', '<=', '>=', '>']
 assignop = [':=']
 types = ['integer']
-reservedWords = ['program', 'function', 'if', 'else', 'then', 'begin', 'end', 'read', 'write', 'var', 'while', 'do']
+reservedWords = ['procedure', 'program', 'function', 'if', 'else', 'then', 'begin', 'end', 'read', 'write', 'var', 'while', 'do']
 punct = {',': 'comma', ':': 'colon', ';': 'scolon', '(': 'lpar', ')': 'rpar', '.': 'dot', '[': 'lbra', ']': 'rbra'}
 sep = [' ', ',', ':', ';', '(', ')', '.', '\n']
 tokens = []

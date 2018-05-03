@@ -10,6 +10,9 @@ def lex():
     global index_current_token
 
     index_current_token += 1
+    if index_current_token >= len(tokens):
+        return (None, None)
+
     return tokens[index_current_token]
 
 def unlex():
@@ -20,8 +23,10 @@ def parser(path):
     global tokens
     tokens = Lexer.lexer(path)
 
-    # TODO: REmove
-    print(tokens)
+    # TODO: Remove
+    for token in tokens:
+        print(token)
+    print("\n")
 
     root = createNode("programRoot", None, False)
     programSub(root)
@@ -64,21 +69,24 @@ def programSub(root):
     # Parse right paren.
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType != 'rpar'):
+        print("Expecting `)` found ", nextTokenValue)
         return "error"
 
     # Parse ';'.
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType != "scolon"):
+        print("Expecting `;` found ", nextTokenValue)
         return "error"
 
     # Parse declaration.
     declarationsChild = createNode("declarationsChild", None, False)
-    declarationsSub(declarationsChild)
+    ret = declarationsSub(declarationsChild)
     addNode(root, declarationsChild)
 
-    # subprogramDeclarationsChild = createNode("subprogramDeclarationsChild", None, False)
-    # subprogramDeclarationsSub(subprogramDeclarationsChild)
-    # addNode(root, subprogramDeclarationsChild)
+    # Parse subprograms.
+    subprogramDeclarationsChild = createNode("subprogramDeclarationsChild", None, False)
+    subprogramDeclarationsSub(subprogramDeclarationsChild)
+    addNode(root, subprogramDeclarationsChild)
 
     # Parse compound statements.
     compoundStatementsChild = createNode("compoundStatementsChild", None, False)
@@ -88,29 +96,38 @@ def programSub(root):
     # Parse dot.
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType != "dot"):
+        print("Expecting `.` found ", nextTokenValue)
         return "error"
 
 # 2. identifier_list ⟶ 'id' [',' identifier_list]
 def identifierListSub(root):
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType != "id"):
+        print("Expecting 'id' found ", nextTokenValue)
         return "error"
+    idNode = createNode(nextTokenType, nextTokenValue, True)
+    addNode(root, idNode)
+
 
     while True:
         (nextTokenType, nextTokenValue) = lex()
-        if nextTokenType == "comma":
-            identifierListSub()
-        else:
+        if nextTokenType != "comma":
             unlex()
             break
+
+        (nextTokenType, nextTokenValue) = lex()
+        if (nextTokenType != "id"):
+            print("Expecting 'id' found ", nextTokenValue)
+            return "error"
+        idNode = createNode(nextTokenType, nextTokenValue, True)
+        addNode(root, idNode)
 
 
 # 3. declarations ⟶  {'var' identifier_list ':' type ';'}
 def declarationsSub(root):
-    print("declarationsSub")
     while (True):
         (nextTokenType, nextTokenValue) = lex()
-        if (nextTokenPair[0] != "var"):
+        if (nextTokenType != "var"):
             unlex()
             break
 
@@ -122,9 +139,9 @@ def declarationsSub(root):
         identifierListSub(identifierListChild)
         addNode(root, identifierListChild)
 
-
-        nextTokenPair = lex()
-        if (nextTokenPair[0] != "colon"):
+        (nextTokenType, nextTokenValue) = lex()
+        if (nextTokenType != "colon"):
+            print("Expecting ':' found ", nextTokenValue)
             return "error"
         # We don't have to create a node for this punctuations because the "root" of this sub-tree will have only one child
         # colonChild = createNode("colonChild", nextTokenPair[1], True)
@@ -132,17 +149,20 @@ def declarationsSub(root):
 
         # Parse type.
         (nextTokenType, nextTokenValue) = lex()
-        if nextTokenType != "types":
+        if nextTokenType != "type":
+            print("Expecting a type found ", nextTokenValue)
             return "error"
 
-        typeNode = createNode(nextTokenType, nextTokenValue, False)
+        typeNode = createNode(nextTokenType, nextTokenValue, True)
+        addNode(root, typeNode)
 
         # typeChild = createNode("typeChild", None, False)
         # typeSub(typeChild)
         # addNode(root, typeChild)
 
-        nextTokenPair = lex()
-        if (nextTokenPair[0] != "scolon"):
+        (nextTokenType, nextTokenValue) = lex()
+        if (nextTokenType != "scolon"):
+            print("Expecting ';' found ", nextTokenValue)
             return "error"
 
 
@@ -150,44 +170,25 @@ def declarationsSub(root):
 # declarationsSub(root)
 
 
-# For the time being we parse types directly.
-
-# # !!! 4. type ⟶ standard_type
-# def typeSub(root):
-#     typeChild = createNode('typeRoot', None, False)
-#     standardTypeSub(typeChild)
-#     addNode(root, typeChild)
-#
-#
-# # !!! 5. standard_type ⟶ 'integer'
-# def standardTypeSub(root):
-#     (nextTokenType, nextTokenValue) = lex()
-#     if (nextTokenType != 'type'):
-#         return 'error'
-#
-#     integerChild = createNode(nextTokenType, nextTokenValue, True)
-#     addNode(root, integerChild)
-
 
 # 6. subprogram_declarations ⟶ {subprogram_declaration ';'}
 def subprogramDeclarationsSub(root):
     while True:
         (nextTokenType, nextTokenValue) = lex()
+        unlex()
 
         if (nextTokenType != 'function' and nextTokenType != 'procedure'):
-            unlex()
             break
 
         # Create "subprogramDeclarationChild".
         subprogramDeclarationChild = createNode("subprogramDeclarationChild", None, False)
+        subprogramDeclarationSub(subprogramDeclarationChild)
         addNode(root, subprogramDeclarationChild)
 
-        # Parse child.
-        subprogramDeclarationSub(subprogramDeclarationChild)
-
         # Should terminate with a semicolon.
-        nextTokenPair = lex()
+        (nextTokenType, nextTokenValue) = lex()
         if (nextTokenType != 'scolon'):
+            print("Expecting ';' found ", nextTokenType)
             return "error"
 
         # scolonChild = createNode(nextTokenType, nextTokenType, true)
@@ -197,16 +198,16 @@ def subprogramDeclarationsSub(root):
 # 7. subprogram_declaration ⟶ subprogram_head declarations compound_statement
 def subprogramDeclarationSub(root):
     subprogramHeadChild = createNode("subprogramHeadChild", None, False)
-    addNode(root, subprogramHeadChild)
     subprogramHeadSub(subprogramHeadChild)
+    addNode(root, subprogramHeadChild)
 
     declarationsChild = createNode("declarationsChild", None, False)
-    addNode(root, declarationsChild)
     declarationsSub(declarationsChild)
+    addNode(root, declarationsChild)
 
     compoundStatementsChild = createNode("compoundStatementsChild", None, False)
-    addNode(root, compoundStatementsChild)
     compoundStatementsSub(compoundStatementsChild)
+    addNode(root, compoundStatementsChild)
 
 
 # !!! 8. subprogram_head ⟶ 'function' 'id' arguments ':' standard_type ';' | 'procedure' 'id' arguments ';'
@@ -237,10 +238,13 @@ def subprogramHeadSub(root):
         # colonChild = createNode(nextTokenType, nextTokenValue, True)
         # addNode(root, colonChild)
 
-        standardTypeChild = createNode('standardTypeChild', None, False)
-        addNode(root, standardTypeChild)
+        (nextTokenType, nextTokenValue) = lex()
+        if (nextTokenType != 'type'):
+            print("Expecting type found ", nextTokenValue)
+            return 'error'
 
-        standardTypeSub(standardTypeChild)
+        typeNode = createNode(nextTokenType, nextTokenValue, True)
+        addNode(root, typeNode)
 
         (nextTokenType, nextTokenValue) = lex()
         if (nextTokenType != 'scolon'):
@@ -256,18 +260,19 @@ def subprogramHeadSub(root):
 
         (nextTokenType, nextTokenValue) = lex()
         if (nextTokenType != 'id'):
+            print("Expecting 'id' found ", nextTokenValue)
             return 'error'
 
         idChild = createNode(nextTokenType, nextTokenValue, True)
         addNode(root, idChild)
 
         argumentsChild = createNode('argumentsChild', None, False)
-        addNode(root, argumentsChild)
-
         argumentsSub(argumentsChild)
+        addNode(root, argumentsChild)
 
         (nextTokenType, nextTokenValue) = lex()
         if (nextTokenType != 'scolon'):
+            print("Expecting ';' found ", nextTokenValue)
             return 'error'
 
     # scolonChild = createNode(nextTokenType, nextTokenValue, True)
@@ -281,15 +286,16 @@ def subprogramHeadSub(root):
 def argumentsSub(root):
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType != 'lpar'):
+        unlex()
         return
 
     parameterListChild = createNode('parameterListChild', None, False)
-    addNode(root, parameterListChild)
-
     parameterListSub(parameterListChild)
+    addNode(root, parameterListChild)
 
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType != 'rpar'):
+        print("Expecting ')' found ", nextTokenValue)
         return 'error'
 
 
@@ -300,14 +306,21 @@ def parameterListSub(root):
     addNode(root, identifierListNode)
 
     (nextTokenType, nextTokenValue) = lex()
-    if (nextTokenType != 'colon'):
+    if nextTokenType != 'colon':
+        print("Expecting ':' found ", nextTokenValue)
         return "error"
 
-    typeSub()
+    (nextTokenType, nextTokenValue) = lex()
+    if nextTokenType != 'type':
+        print("Expecting a type found ", nextTokenValue)
+        return "error"
+
+    typeNode = createNode(nextTokenType, nextTokenValue, True)
+    addNode(root, typeNode)
 
     nextTokenType = lex()
     if (nextTokenType == 'scolon'):
-        parameterListSub()
+        parameterListSub(root)
     else:
         unlex()
 
@@ -316,32 +329,34 @@ def parameterListSub(root):
 def compoundStatementsSub(root):
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType != "begin"):
+        print("Expecting `begin` found ", nextTokenValue)
         return "error"
 
     beginChild = createNode(nextTokenType, nextTokenValue, True)
     addNode(root, beginChild)
 
-    nextTokenPair = lex()
-    if (nextTokenPair[0] == "id"):
-        unlex()
+    (nextTokenType, nextTokenValue) = lex()
+    unlex()
+    if (nextTokenType == "id"):
+        # FIXME
         idChild = createNode(nextTokenType, nextTokenValue, True)
+        statementListSub(root)
         addNode(root, idChild)
-        statementList()
 
-    nextTokenPair = lex()
-    if (nextTokenPair[0] != "end"):
+    (nextTokenType, nextTokenValue) = lex()
+    if (nextTokenType != "end"):
+        print("Expecting `end` found ", nextTokenValue)
         return "error"
 
-    endChild = createNode(nextTokenPair[0], nextTokenPair[1], True)
+    endChild = createNode(nextTokenType, nextTokenValue, True)
     addNode(root, endChild)
 
 
 # !!! 12. statement_list ⟶ statement {';' statement}
 def statementListSub(root):
     statementChild = createNode('statementChild', None, False)
-    addNode(root, statementChild)
-
     statementSub(statementChild)
+    addNode(root, statementChild)
 
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType == ";"):
@@ -449,20 +464,19 @@ def procedureStatement(root):
 # !!! 16. expression_list ⟶ expression {',' expression}
 def expressionListSub(root):
     expressionChild = createNode('expressionChild', None, False)
+    expressionSub(expressionChild)
     addNode(root, expressionChild)
 
-    expressionSub(expressionChild)
 
-    while (True):  # We might have more expressions
+    while True:  # We might have more expressions
         (nextTokenType, nextTokenValue) = lex()
         if (nextTokenType == "comma"):
             # commaChild = createNode(nextTokenType, nextTokenValue, True)
             # addNode(root, commaChild)
 
             expressionChild = createNode('expressionChild', None, False)
-            addNode(root, expressionChild)
-
             expressionSub(expressionChild)  # In case there are more expressions
+            addNode(root, expressionChild)
 
         else:
             unlex()  # In case there are no more expressions
@@ -511,7 +525,6 @@ def termSub():
     (nextTokenType, nextTokenValue) = lex()
     if (nextTokenType == 'mulop'):
         termSub()
-
     else:
         unlex()  # In case there are no more terms
 
@@ -565,7 +578,7 @@ def factorSub(root):
 
 def visit(root, level):
     for i in range(0, level):
-        print(' ', end='')
+        print('--', end='')
     print(root.tokenType, end='')
     if root.isTerminal:
         print(" ", root.tokenValue, end='')
@@ -576,14 +589,15 @@ def visit(root, level):
 
 
 # Driver
+#
+# if len(sys.argv) < 1:
+#     print("Usage path")
+#     exit()
+#
+# path = sys.argv[1]
 
-if len(sys.argv) < 1:
-    print("Usage path")
-    exit()
-
-path = sys.argv[1]
+path = 'input.txt'
 
 root = parser(path)
-print(root)
 
 visit(root, 0)
