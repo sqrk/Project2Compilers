@@ -80,17 +80,19 @@ def programSub(root):
 	dotChild = createNode("dot", ".", True)
 	addNode(root, dotChild)
 
-#2. identifier_list ⟶ 'id' [',' identifier_list]
-def identifierListSub():
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType != "id"):
-		return "error"
-	
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType == "comma"):
-		identifierListSub()
-	else:
-		index_current_token -= 1
+# 2. identifier_list ⟶ 'id' [',' identifier_list]
+def identifierListSub(root):
+    (nextTokenType, nextTokenValue) = lex()
+    if (nextTokenType != "id"):
+        return "error"
+
+    while True:
+        (nextTokenType, nextTokenValue) = lex()
+        if nextTokenType == "comma":
+            identifierListSub()
+        else:
+            index_current_token -= 1
+            break
 
 
 #3. declarations ⟶  {'var' identifier_list ':' type ';'}
@@ -147,35 +149,29 @@ def standardTypeSub(root):
     addNode(root, integerChild)
 
 
-
-#6. subprogram_declarations ⟶ {subprogram_declaration ';'}
+# 6. subprogram_declarations ⟶ {subprogram_declaration ';'}
 def subprogramDeclarationsSub(root):
-	(nextTokenType, nextTokenValue) = lex()
+    while True:
+        (nextTokenType, nextTokenValue) = lex()
 
-	
-	
-	if (nextTokenType != 'function' and nextTokenType != 'procedure'):
-		index_current_token -= 1
-		return
+        if (nextTokenType != 'function' and nextTokenType != 'procedure'):
+            index_current_token -= 1
+            break
 
-	subprogramDeclarationsChild = createNode("subprogramDeclarationsChild", None, False)
-	addNode(root, subprogramDeclarationsChild)
+        # Create "subprogramDeclarationChild".
+        subprogramDeclarationChild = createNode("subprogramDeclarationChild", None, False)
+        addNode(root, subprogramDeclarationChild)
 
-	subprogramDeclarationSub(subprogramDeclarationsChild)
+        # Parse child.
+        subprogramDeclarationSub(subprogramDeclarationChild)
 
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType != 'scolon'):
-		return "error"
-	scolonChild = createNode("scolon", ";", true)
-	addNode(root, scolonChild)
+        # Should terminate with a semicolon.
+        nextTokenPair = lex()
+        if (nextTokenType != 'scolon'):
+            return "error"
 
-	subprogramDeclarationChild = createNode("subprogramDeclarationChild", None, False)
-	addNode(root, subprogramDeclarationChild)
-
-	subprogramDeclarationsSub(subprogramDeclarationChild)
-
-
-
+        # scolonChild = createNode(nextTokenType, nextTokenType, true)
+        # addNode(root, scolonChild)
 
 
 #7. subprogram_declaration ⟶ subprogram_head declarations compound_statement
@@ -278,21 +274,23 @@ def argumentsSub(root):
     if(nextTokenType != 'rpar'):
         return 'error'
 
-#10. parameter_list ⟶ identifier_list ':' type {';' identifier_list ':' type}  
-def parameterListSub():
-	identifierListSub()
+# 10. parameter_list ⟶ identifier_list ':' type {';' identifier_list ':' type}
+def parameterListSub(root):
+    identifierListNode = createNode("identifierListChild", None, False)
+    identifierListSub(identifierListNode)
+    addNode(root, identifierListNode)
 
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType != 'colon'):
-		return "error"
+    (nextTokenType, nextTokenValue) = lex()
+    if (nextTokenType != 'colon'):
+        return "error"
 
-	typeSub()
+    typeSub()
 
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType == 'scolon'):
-		parameterListSub()
-	else:
-		index_current_token -= 1
+    nextTokenType = lex()
+    if (nextTokenType == 'scolon'):
+        parameterListSub()
+    else:
+        index_current_token -= 1
 
 
 #11. compound_statement ⟶ 'begin' [statement_list] 'end' 
