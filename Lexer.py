@@ -62,12 +62,11 @@ def lexer(path):
                     if (tokenValue):  # If token is not empty, and current char should be skipped, token is complete
                         tokenType = getTokenType(''.join(tokenValue))
                         tokens.append((tokenType, ''.join(tokenValue)))
-
                         tokenValue = []
 
                     if (char != " "):  # If the character found is not a space, we need to send it to the lexer
                         tokenType = getTokenType(char)
-                        tokens.append((char, tokenType))
+                        tokens.append((tokenType, char))
 
                         continue  # Skip appending in tokenValue
                     else:
