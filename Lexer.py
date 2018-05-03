@@ -47,8 +47,8 @@ def getTokenType(nextToken):
         return 'num'
 
 
-def lexer():
-    with open('input.txt') as file:
+def lexer(path):
+    with open(path) as file:
         code = [i.strip() for i in file]
 
     tokenValue = []
@@ -87,6 +87,3 @@ def lexer():
                     continue
 
     return tokens
-
-
-lexer()

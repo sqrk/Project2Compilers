@@ -17,4 +17,4 @@ def createNode(_tokenType, _tokenValue, _isTerminal):
 
 def addNode(_parentNode, _node):
     _node.parent = _parentNode
-    _parentNode.childen.append(_node)
+    _parentNode.children.append(_node)
