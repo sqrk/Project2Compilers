@@ -116,8 +116,11 @@ def declarationsSub():
 
 
 #4. type ⟶ standard_type
-def typeSub():
-	standardTypeSub()
+def typeSub(nextTokenPair, root):
+	typeChild = createNode('typeRoot', None, False)
+	addNode(root, typeChild)
+
+	standardTypeSub(nextTokenPair, typeChild)
 
 
 #5. standard_type ⟶ 'integer'
@@ -168,41 +171,70 @@ def subprogramDeclarationSub():
 
 
 #8. subprogram_head ⟶ 'function' 'id' arguments ':' standard_type ';' | 'procedure' 'id' arguments ';'
-def subprogramHeadsub():
+def subprogramHeadsub(nextTokenPair, root):
 	nextTokenType = lex()
 	if(nextTokenType == 'function'):
+
+		functionChild = createNode('function', 'function', True)
+		addNode(root, functionChild)
 
 		nextTokenType = lex()
 		if(nextTokenType != 'id'):
 			return 'error'
 
-		argumentsSub()
+		idChild = createNode('id', nextTokenPair[1], True)		#Actual value of id (nextTokenPair = (token, value))
+		addNode(root, idChild)
+
+		argumentsChild = createNode('argumentsChild', None, False)
+		addNode(root, argumentsChild)
+
+		argumentsSub(nextTokenPair, argumentsChild)
 
 		nextTokenType = lex()
 		if(nextTokenType != 'colon'):
 			return 'error'
 
-		standardTypeSub()
+		colonChild = createNode('colon', ':', True)
+		addNode(root, colonChild)
+
+		standardTypeChild = createNode('standardTypeChild', None, False)
+		addNode(root, standardTypeChild)
+
+		standardTypeSub(nextTokenPair, standardTypeChild)
 
 		nextTokenType = lex()
 		if(nextTokenType != 'scolon'):
 			return 'error'
 
+		scolonChild = createNode('scolon', ';', True)
+		addNode(root, scolonChild)
+
 	elif(nextTokenType == 'procedure'):
+
+		procedureChild = createNode('procedure', 'procedure', True)
+		addNode(root, procedureChild)
 
 		nextTokenType = lex()
 		if(nextTokenType != 'id'):
 			return 'error'
 
-		argumentsSub()
+		idChild = createNode('id', nextTokenPair[1], True)
+		addNode(root, idChild)
+
+		argumentsChild = createNode('argumentsChild', None, False)
+		addNode(root, argumentsChild)
+
+		argumentsSub(nextTokenPair, argumentsChild)
 
 		nextTokenType = lex()
 		if(nextTokenType != 'scolon'):
 			return 'error'
 
+		scolonChild = createNode('scolon', ';', True)
+		addNode(root, scolonChild)
+
 	else:
 		return 'error'		#In case none of 'function' nor 'procedure' was found
-
 
 
 #9. arguments ⟶ ['(' parameter_list ')']
@@ -251,12 +283,21 @@ def compoundStatementsSub():
 
 
 #12. statement_list ⟶ statement {';' statement}
-def statementListSub():
-	statementSub()
+def statementListSub(nextTokenPair, root):
+	statementChild = createNode('statementChild', None, False)
+	addNode(root, statementChild)
+
+	statementSub(nextTokenPair, statementChild)
 
 	nextTokenType = lex()
 	if(nextTokenType == ";"):
-		statementSub()					#In case there are more statements
+		scolonChild = createNode('scolon', ';', True)
+		addNode(root, scolonChild)
+
+		statementChild = createNode('statementChild', None, False)
+		addNode(root, statementChild)
+
+		statementSub(nextTokenPair, statementChild)					#In case there are more statements
 	
 	else:
 		index_current_token -= 1		#In case there are no more statements
@@ -341,13 +382,23 @@ def procedureStatement():
 
 
 #16. expression_list ⟶ expression {',' expression} 
-def expressionListSub():
-	expressionSub()
+def expressionListSub(nextTokenPair, root):
+	expressionChild = createNode('expressionChild', None, False)
+	addNode(root, expressionChild)
+
+	expressionSub(nextTokenPair, expressionChild)
 
 	while(True):							#We might have more expressions
 		nextTokenType = lex()
 		if(nextTokenType == "comma"):
-			expressionSub()					#In case there are more expressions
+
+			commaChild = createNode('comma', ',', True)
+			addNode(root, commaChild)
+
+			expressionChild = createNode('expressionChild', None, False)
+			addNode(root, expressionChild)
+
+			expressionSub(nextTokenPair, expressionChild)					#In case there are more expressions
 
 		else:
 			index_current_token -= 1		#In case there are no more expressions
@@ -402,23 +453,45 @@ def termSub():
 
 
 #20.factor ⟶ 'id' ['(' expression_list ')' ]	| 'num'   | '(' expression ')'   | 'not' factor
-def factorSub():
+def factorSub(nextTokenPair, root):
 	nextTokenType = lex()
 	if(nextTokenType == 'id'):
+		
+		idChild = createNode('id', nextTokenPair[1], True)
+		addNode(root, idChild)
 
 		nextTokenType = lex()
 		if(nextTokenType == 'lpar'):		#Case of 'id' '(' expression_list ')'
 
-			expressionListSub()
+			lparChild = createNode('lpar', '(', True)
+			addNode(root, lparChild)
+
+			expressionListChild = createNode('expressionListChild', None, False)
+			addNode(root, expressionListChild)
+
+			expressionListSub(nextTokenPair, expressionListChild)
 
 			nextTokenType = lex()
 			if(nextTokenType != 'rpar'):
 				return 'error'
+
+			rparChild = createNode('rpar', ')', True)
+			addNode(root, rparChild)
+
 		else:
 			index_current_token -= 1		#In case there's no expression list
 
 	elif(nextTokenType == 'not'):			#Case of 'not' factor
-		factorSub()
+
+		notChild = createNode('not', 'not', True)
+		addNode(root, notChild)
+
+		factorChild = createNode('factorChild', None, False)
+		addNode(root, factorChild)
+
+		factorSub(nextTokenPair, factorChild)
 
 	elif(nextTokenType != 'num'):			#Case of 'num'
 		return 'error'
+
+	numChild = createNode('num', nextTokenPair[1], True)
