@@ -94,25 +94,39 @@ def identifierListSub():
 
 
 #3. declarations ⟶  {'var' identifier_list ':' type ';'}
-def declarationsSub():
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType != "var"):
-		index_current_token -=1
-		return
+ddef declarationsSub(root):
+	while (True):
+		(nextTokenType,nextTokenValue) = lex()
+		if (nextTokenPair[0] != "var"):
+			index_current_token -=1
+			break
 
-	identifier_listSub()
+		varChild = createNode(nextTokenType, nextTokenValue, True)
+		addNode(root, varChild)
 
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType != "colon"):
-		return "error"
+		identifierListChild = createNode("identifierListChild", None, False)
+		addNode(root, identifierListChild)
 
-	typeSub()
+		identifierListSub(identifierListChild)
 
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType != "scolon"):
-		return "error"
+		nextTokenPair = lex()
+		if (nextTokenPair[0] != "colon"):
+			return "error"
+		#We don't have to create a node for this punctuations because the "root" of this sub-tree will have only one child
+		# colonChild = createNode("colonChild", nextTokenPair[1], True)
+		# addNode(root, colonChild)
 
-	declarationsSub()
+		typeChild = createNode("typeChild", None, False)
+		addNode(root, typeChild)
+
+		typeSub(typeChild)
+
+		nextTokenPair = lex()
+		if (nextTokenPair[0] != "scolon"):
+			return "error"
+		#In case we won't to use a recursion instead
+		#declarationsSub(root)
+
 
 
 #!!! 4. type ⟶ standard_type
@@ -165,11 +179,19 @@ def subprogramDeclarationsSub(root):
 
 
 #7. subprogram_declaration ⟶ subprogram_head declarations compound_statement
-def subprogramDeclarationSub():
+def subprogramDeclarationSub(root):
 
-	subprogramHeadSub()
-	declarationsSub()
-	compoundStatementsSub()
+	subprogramHeadChild = createNode("subprogramHeadChild", None, False)
+	addNode(root, subprogramHeadChild)
+	subprogramHeadSub(subprogramHeadChild)
+
+	declarationsChild = createNode("declarationsChild", None, False)
+	addNode(root, declarationsChild)
+	declarationsSub(declarationsChild)
+
+	compoundStatementsChild = createNode("compoundStatementsChild", None, False)
+	addNode(root, compoundStatementsChild)
+	compoundStatementsSub(compoundStatementsChild)
 
 
 
@@ -274,19 +296,28 @@ def parameterListSub():
 
 
 #11. compound_statement ⟶ 'begin' [statement_list] 'end' 
-def compoundStatementsSub():
-	(nextTokenType, nextTokenValue) = lex()
+def compoundStatementsSub(root):
+
+	(nextTokenType,nextTokenValue) = lex()
 	if (nextTokenType != "begin"):
 		return "error"
 
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType == "id"):
+	beginChild = createNode(nextTokenType, nextTokenValue, True)
+	addNode(root, beginChild)
+
+	nextTokenPair = lex()
+	if (nextTokenPair[0] == "id"):
 		index_current_token -= 1
+		idChild = createNode(nextTokenType, nextTokenValue, True)
+		addNode(root, idChild)
 		statementList()
 
-	(nextTokenType, nextTokenValue) = lex()
-	if (nextTokenType != "end"):
+	nextTokenPair = lex()
+	if (nextTokenPair[0] != "end"):
 		return "error"
+
+	endChild = createNode(nextTokenPair[0], nextTokenPair[1], True)
+	addNode(root, endChild)
 
 
 #!!! 12. statement_list ⟶ statement {';' statement}
@@ -374,19 +405,25 @@ def variable ():
 
 
 #15. procedure_statement ⟶ 'id' ['(' expression_list ')']
-def procedureStatement():
-	(nextTokenType, nextTokenValue) = lex()
+def procedureStatement(root):
+	nextTokenType = lex()
 	if (nextTokenType != "id"):
 		return "error"
 
-	(nextTokenType, nextTokenValue) = lex()
+	idChild = createNode(nextTokenPair[0], nextTokenPair[1], True)
+	addNode(root, idChild)
+
+	nextTokenType = lex()
 	if (nextTokenType != "lpar"):
 		index_current_token -= 1
 		return
 
-	expressionListSub()
+	lparChild = createNode(nextTokenPair[0], nextTokenPair[1], True)
+	addNode(root, lparChild)
 
-	(nextTokenType, nextTokenValue) = lex()
+	expressionListSub(lparChild)
+
+	nextTokenType = lex()
 	if (nextTokenType != "rpar"):
 		return "error"
 
@@ -448,7 +485,7 @@ def simpleExprSub (root):
 			break
 
 
-
+#FIXME
 #19. term ⟶ factor ['mulop' term]
 def termSub():
 	factorSub()
