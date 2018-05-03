@@ -29,7 +29,7 @@ Refer to the documentation first, the conventions used here are mentionned there
 
 12.statement_list ⟶ statement {';' statement}
 						
-13.statement ⟶ 'id' [('assignop' expression) | '('expression_list')']
+13.statement ⟶ 'id' ('assignop' expression | '(' expression_list ')' )
 			| compound_statement
 			| 'if' expression 'then' statement 'else' statement 
 			| 'while' expression 'do' statement
