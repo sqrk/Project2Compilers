@@ -1,9 +1,3 @@
-import re
-
-variables = {
-
-}
-
 sign = ['+', '-']
 addop = ['+', '-', 'or']
 mulop = ['*', '/', 'div', 'mod', 'and']
@@ -73,6 +67,8 @@ def lexer(path):
 
                     if (char != " "):  # If the character found is not a space, we need to send it to the lexer
                         tokenType = getTokenType(char)
+                        tokens.append((char, tokenType))
+
                         continue  # Skip appending in tokenValue
                     else:
                         continue
