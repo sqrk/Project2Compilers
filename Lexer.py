@@ -86,5 +86,7 @@ def lexer():
                     tokenValue = []
                     continue
 
+    return tokens
+
 
 lexer()
