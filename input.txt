@@ -1,3 +1,4 @@
+#Loulou Au bled
 program main(input, output); 
 	var x, y: integer;
 
